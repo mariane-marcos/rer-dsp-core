@@ -48,13 +48,15 @@ etl:
   #      WHERE c.geom IS NOT NULL
   #        AND c.shape_id IS NOT NULL
   #        AND d.shape_id IS NOT NULL) AS src_l2
-  #   primary_key: "shape_id"
+  #   primary_key: "shape_id"    # one column; composite keys are not supported
   #   parent_key: "parent_shape_id"
   #   name_column: "nome"
   #   geometry_column: "geom"
   #   updated_at_column: "data_atualizacao"
   #
   # After editing SQL here, run: ./config.sh
+  # primary_key is a single source column (not a composite key). The destination
+  # id and the WFS/CSV FID use that column alone.
   level1:
     source_table: "<source_schema>.<source_table>"
     primary_key: "<source_pk>"
@@ -106,7 +108,7 @@ etl:
   #
   #   layers:
   #     - source_table: "<schema>.<table>"   # origin schema (e.g. public) — never dsp
-  #       primary_key: "<source_pk>"
+  #       primary_key: "<source_pk>"          # one column; composite keys are not supported
   #       parent_key: "<source_parent_pk>"   # AOI FK (e.g. aeroporto_id)
   #       label_column: "<source_name>"                 # optional column
   #       geometry_column: "<source_geom>"

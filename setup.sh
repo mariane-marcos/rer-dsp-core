@@ -81,8 +81,8 @@ fi
 step_header 4 "Adopter configuration"
 ensure_adopter_config
 
-step_header 5 "Migration job repository path"
-ensure_dsp_repositories --job
+step_header 5 "Job repositories"
+ensure_dsp_repositories --job --geo-file-job
 
 step_header 6 "Map layers config (WMS / GeoServer)"
 

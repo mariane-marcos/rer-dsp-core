@@ -481,7 +481,11 @@ def etl_field_help(field: str) -> str:
             "./config/adopter/adopter-config.yaml (advanced mode), then running "
             "./config.sh — do not type SQL here."
         ),
-        "primary_key": "Unique source column used to identify each record.",
+        "primary_key": (
+            "A single source column that uniquely identifies each record. "
+            "Composite keys (two or more columns) are not supported — "
+            "the destination id and the WFS/CSV FID use this column alone."
+        ),
         "parent_key": "Source column linking this record to its parent territory.",
         "layer_parent_key": (
             "Source column linking this feature to its area of interest (AOI)."
@@ -879,6 +883,19 @@ def require_non_blank_column(value: Any, prefix: str) -> str:
     if not isinstance(value, str) or not value.strip() or "<" in value:
         raise ValueError(f"{prefix} is required (source column name, no placeholder).")
     return value.strip()
+
+
+def require_simple_primary_key(value: Any, prefix: str) -> str:
+    if isinstance(value, (list, tuple)):
+        raise ValueError(
+            f"{prefix} must be a single column; composite keys are not supported."
+        )
+    name = require_non_blank_column(value, prefix)
+    if "," in name or ";" in name:
+        raise ValueError(
+            f"{prefix} must be a single column; composite keys are not supported."
+        )
+    return name
 
 
 def resolve_optional_column(value: Any, prefix: str) -> str | None:
@@ -1455,7 +1472,9 @@ def validate_extra_layers(values: dict[str, Any]) -> list[dict[str, Any]]:
         normalized = {
             "source_table": source_table.strip(),
             "area_of_interest_id_column": aoi_column.strip(),
-            "primary_key": require_layer_field(entry, "primary_key", prefix),
+            "primary_key": require_simple_primary_key(
+                entry.get("primary_key"), f"{prefix}.primary_key"
+            ),
             "created_at_column": require_layer_field(entry, "created_at_column", prefix),
             "updated_at_column": resolve_optional_layer_field(entry, "updated_at_column", prefix),
             "label_column": resolve_optional_layer_field(entry, "label_column", prefix),
@@ -2637,7 +2656,7 @@ def replace_env(env_file: Path, values: dict[str, Any]) -> None:
 
 
 def set_source_mapping(section: dict[str, Any], values: dict[str, Any]) -> None:
-    primary_key = require_non_blank_column(values.get("primary_key"), "primary-key")
+    primary_key = require_simple_primary_key(values.get("primary_key"), "primary-key")
     geometry_column = require_non_blank_column(values.get("geometry_column"), "geometry-column")
     creation_date_column = require_non_blank_column(
         values.get("created_at_column"), "created-at-column"
@@ -2953,7 +2972,7 @@ def apply_config(root: Path, active: Path, *, quiet: bool = False) -> None:
     aoi.update(
         {
             "source-table": aoi_values["source_table"],
-            "primary-key": require_non_blank_column(
+            "primary-key": require_simple_primary_key(
                 aoi_values.get("primary_key"), "etl.area_of_interest.primary_key"
             ),
             "creation-date-column": require_non_blank_column(

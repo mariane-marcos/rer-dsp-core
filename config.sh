@@ -52,7 +52,7 @@ if [ ! -f "$EXAMPLE_FILE" ]; then
 fi
 
 ensure_dotenv
-ensure_dsp_repositories --backend --frontend --job
+ensure_dsp_repositories --backend --frontend --job --geo-file-job
 print_config_intro
 
 if [ -f "$CONFIG_FILE" ]; then

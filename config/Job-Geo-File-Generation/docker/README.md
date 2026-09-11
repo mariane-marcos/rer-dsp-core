@@ -11,8 +11,11 @@ does not have to query the WFS. Batch metadata lives in `dsp-db` schema `geo_fil
 `data_migration`.
 
 The bucket must already exist: the job never creates it. Without a bucket it logs the error,
-publishes nothing and exits with success, so the stack keeps running and the territorial
-flags stay on for the next cycle.
+publishes nothing and the JVM exits with success (so the stack keeps running and the
+territorial flags stay on for the next cycle). The Spring Batch metadata in schema
+`geo_file_generation` records `exit_code = OBJECT_STORAGE_NOT_READY` on
+`batch_job_execution` — query that column to see cycles where generation was skipped due
+to storage, distinct from `COMPLETED` (all files published) or `PUBLISH_*` (partial failures).
 
 ## Entrypoint
 
